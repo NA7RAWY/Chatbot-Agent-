@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chatbot</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="chat-container">
+    <h2>Chatbot 🎤📁💬</h2>
+    <div id="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Type or speak..." />
+      <input type="file" id="file-input" />
+      <button id="mic-button">🎤</button>
+      <button id="send-button">Send</button>
+      <button id="clear-button">🗑️</button>
+    </div>
+  </div>
+
+  <script>
+    const micBtn = document.getElementById("mic-button");
+    let recognition;
+
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+
+      micBtn.addEventListener("click", () => {
+        recognition.start();
+        micBtn.textContent = "🎙️ Listening...";
+      });
+
+      recognition.onresult = function (event) {
+        document.getElementById("user-input").value = event.results[0][0].transcript;
+        micBtn.textContent = "🎤";
+      };
+
+      recognition.onerror = function () {
+        micBtn.textContent = "🎤";
+        alert("Error using microphone. Check browser permissions.");
+      };
+
+      recognition.onend = () => micBtn.textContent = "🎤";
+    } else {
+      micBtn.disabled = true;
+      micBtn.title = "Speech recognition not supported in your browser";
+      alert("Your browser does not support voice input.");
+    }
+
+    document.getElementById("send-button").onclick = handleSend;
+    document.getElementById("clear-button").onclick = () => {
+      fetch("/clear", { method: "POST" }).then(() => {
+        document.getElementById("chat-box").innerHTML = "";
+      });
+    };
+    document.getElementById("user-input").addEventListener("keypress", e => {
+      if (e.key === "Enter") handleSend();
+    });
+
+    function handleSend() {
+      const input = document.getElementById("user-input");
+      const fileInput = document.getElementById("file-input");
+      const message = input.value.trim();
+
+      if (!message && fileInput.files.length === 0) return;
+
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const lines = e.target.result.split("\n");
+          const clean = lines.filter(line => !line.toLowerCase().includes("filename") && !line.toLowerCase().includes("type") && line.trim().length > 0);
+          const fileText = clean.join("\n");
+          sendMessage(message + "\n\n--- File Content ---\n" + fileText);
+        };
+        
+      const formData = new FormData();
+      formData.append("file", file);
+
+      fetch("/upload", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.content) {
+          sendMessage(message + "\n\n--- File Content ---\n" + data.content);
+        } else {
+          sendMessage("⚠️ Could not extract text from PDF.");
+        }
+      });
+    
+      } else {
+        sendMessage(message);
+      }
+    }
+
+    async function sendMessage(msg) {
+      const chatBox = document.getElementById("chat-box");
+      chatBox.innerHTML += `<div class="bubble user-bubble">${msg}</div>`;
+      document.getElementById("user-input").value = "";
+
+      const loader = document.createElement("div");
+      loader.className = "loader";
+      chatBox.appendChild(loader);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: msg })
+        });
+
+        const data = await res.json();
+        loader.remove();
+        chatBox.innerHTML += `<div class="bubble bot-bubble">${data.response}</div>`;
+        speakText(data.response.replace(/<[^>]+>/g, ""));
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch {
+        loader.remove();
+        chatBox.innerHTML += `<div class="bubble error-bubble">⚠️ Error</div>`;
+      }
+    }
+
+    function speakText(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    }
+  </script>
+</body>
+</html>

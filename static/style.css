@@ -1,0 +1,98 @@
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #101010;
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+.chat-container {
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  background: #1b1b1b;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #000;
+}
+
+h2 {
+  text-align: center;
+  color: #26a69a;
+}
+
+#chat-box {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.input-area {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+input[type="text"], input[type="file"] {
+  flex: 1;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  background-color: #26a69a;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.bubble {
+  max-width: 85%;
+  margin: 10px;
+  padding: 10px 15px;
+  border-radius: 15px;
+  animation: fadeIn 0.3s ease-in;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.user-bubble {
+  background-color: #2d3436;
+  margin-left: auto;
+  text-align: right;
+}
+
+.bot-bubble {
+  background-color: #34495e;
+  margin-right: auto;
+  text-align: left;
+}
+
+.error-bubble {
+  background-color: #c0392b;
+  color: white;
+}
+
+.loader {
+  width: 25px;
+  height: 25px;
+  border: 4px solid #444;
+  border-top-color: #26a69a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 10px auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
