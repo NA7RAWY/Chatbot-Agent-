@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import google.generativeai as genai
 from utils.chat_compression import compress_chat
@@ -7,22 +6,22 @@ import os
 import json
 import pdfplumber
 from dotenv import load_dotenv
+
+# Load environment variables
 load_dotenv()
 
-
+# Create uploads folder
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Configure Gemini
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel("models/gemini-2.5-flash")
 
-HISTORY_FILE = "chat_history.json"
-if os.path.exists(HISTORY_FILE):
-    with open(HISTORY_FILE, "r") as f:
-        chat_history = json.load(f)
-else:
-    chat_history = []
+# Use in-memory chat history (no file writing in Vercel)
+chat_history = []
 
+# Initialize Flask app
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -51,8 +50,6 @@ You are a helpful assistant.
         bot_reply = f"⚠️ Error: {str(e)}"
 
     chat_history.append({"user": user_input, "bot": bot_reply})
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(chat_history, f, indent=2)
 
     return jsonify({"response": Markup(f"<div class='bot-reply'>{bot_reply}</div>")})
 
@@ -76,11 +73,10 @@ def upload():
 def clear_chat():
     global chat_history
     chat_history = []
-    with open(HISTORY_FILE, "w") as f:
-        json.dump([], f)
     return jsonify({"status": "cleared"})
 
-
+# Support local + Vercel run
 if __name__ == "__main__":
     app.run(debug=True)
+
 app = app
