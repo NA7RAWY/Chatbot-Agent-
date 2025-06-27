@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "uploads"))
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+#os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
