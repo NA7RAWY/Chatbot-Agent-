@@ -1,28 +1,27 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import google.generativeai as genai
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from utils.chat_compression import compress_chat
 from markupsafe import Markup
-import os
 import json
 import pdfplumber
 from dotenv import load_dotenv
 
-# Load environment variables
+
 load_dotenv()
 
-# Create uploads folder
-UPLOAD_FOLDER = "uploads"
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "uploads"))
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Configure Gemini
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 model = genai.GenerativeModel("models/gemini-2.5-flash")
 
-# Use in-memory chat history (no file writing in Vercel)
 chat_history = []
 
-# Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, template_folder="../templates", static_folder="../static")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 @app.route("/")
@@ -75,7 +74,6 @@ def clear_chat():
     chat_history = []
     return jsonify({"status": "cleared"})
 
-# Support local + Vercel run
 if __name__ == "__main__":
     app.run(debug=True)
 
