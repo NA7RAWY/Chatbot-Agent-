@@ -1,3 +1,5 @@
-flask
+Flask
 google-generativeai
 pdfplumber
+python-dotenv
+MarkupSafe
