@@ -80,7 +80,6 @@ def clear_chat():
         json.dump([], f)
     return jsonify({"status": "cleared"})
 
-if __name__ == "__main__":
 
 if __name__ == "__main__":
     app.run(debug=True)
